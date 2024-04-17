@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-const SECRET = process.env.JWTSECRET;
 
 // Middleware function to verify JWT token
 const verifyToken = (req, res, next) => {
@@ -9,7 +8,7 @@ const verifyToken = (req, res, next) => {
     const bearerToken = bearerHeader.split(" ")[1];
     req.token = bearerToken;
 
-    jwt.verify(req.token, SECRET, (err, authData) => {
+    jwt.verify(req.token, process.env.JWT_SECRET, (err, authData) => {
       if (err) {
         res
           .status(403)

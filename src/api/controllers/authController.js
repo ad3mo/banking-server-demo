@@ -1,23 +1,33 @@
 const bcrypt = require("bcrypt");
+const { Op } = require("sequelize");
 const jwt = require("jsonwebtoken");
 const User = require("../../models/UserModel");
-const SECRET = process.env.JWTSECRET;
 
 const authController = {
   async register(req, res, next) {
     try {
+      //check if user exists
+      const existingUser = await User.findOne({
+        where: {
+          [Op.or]: [{ username: req.body.username }, { email: req.body.email }],
+        },
+      });
+
+      if (existingUser) {
+        return res.status(400).json({
+          error: "User with the same username or email already exists",
+        });
+      }
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
       const newUser = await User.create({
         username: req.body.username,
         password: hashedPassword,
         email: req.body.email,
       });
-      const token = jwt.sign({ id: user.id }, SECRET, {
+      const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, {
         expiresIn: "24h",
       });
-      res
-        .status(201)
-        .json({ message: "Signup up successfully", user: newUser, token });
+      res.status(201).json({ message: "Signup up successfully", token });
     } catch (error) {
       next(error);
     }
@@ -29,12 +39,10 @@ const authController = {
         where: { email: req.body.email },
       });
       if (user && (await bcrypt.compare(req.body.password, user.password))) {
-        const token = jwt.sign({ id: user.id }, SECRET, {
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
           expiresIn: "24h",
         });
-        res
-          .status(200)
-          .json({ message: "Logged in successfully", user, token });
+        res.status(200).json({ message: "Logged in successfully", token });
       } else {
         throw new Error("Invalid credentials");
       }
