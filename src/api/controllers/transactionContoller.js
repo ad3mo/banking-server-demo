@@ -43,7 +43,9 @@ const transactionController = {
         );
         //check if receiver account exist
         if (!receiverAccount) {
-          throw new Error("Reciever ID does not exist");
+          return res.status(400).json({
+            message: "Receiver account number does not exist!",
+          });
         }
         //check if sender account is the same as receiver account
 
@@ -55,7 +57,9 @@ const transactionController = {
 
         // Check if sender has enough balance
         if (senderAccount.balance < amount) {
-          throw new Error("Not enough balance");
+          return res.status(400).json({
+            message: "No enough balance",
+          });
         }
 
         // udate balances
