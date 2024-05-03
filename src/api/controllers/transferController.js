@@ -11,6 +11,11 @@ const transferController = {
     if (!senderAccountId || !receiverAccountId || !amount || amount <= 0) {
       return res.status(400).json({ message: "Invalid input" });
     }
+    if (senderAccountId === receiverAccountId) {
+      return res
+        .status(400)
+        .json({ message: "You can't send money to yourself" });
+    }
 
     try {
       // Start a transaction
@@ -70,14 +75,14 @@ const transferController = {
   },
   async getTransactionHistory(req, res, next) {
     try {
-      const userId = req.user.id; // user id from token
+      const userId = req.user.id;
       // get all user accounts (1 acc for testing purposes)
       const accounts = await Account.findAll({
         where: { userId: userId },
         attributes: ["number"],
       });
 
-      // Extract the account IDs from the accounts objects
+      //extract account IDs from the accounts objects
       const accountIds = accounts.map((account) => account.number);
 
       const transactions = await Transfer.findAll({

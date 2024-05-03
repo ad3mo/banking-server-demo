@@ -1,33 +1,52 @@
+const User = require("../../models/UserModel");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
 const jwt = require("jsonwebtoken");
-const User = require("../../models/UserModel");
+const validator = require("validator");
+
+const createToken = (id) => {
+  secret = process.env.JWT_SECRET;
+  return jwt.sign({ id }, secret, {
+    expiresIn: "24h",
+  });
+};
 
 const authController = {
   async register(req, res, next) {
     try {
+      const { username, email, password } = req.body;
+      if (!username || !email || !password) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
       //check if user exists
       const existingUser = await User.findOne({
         where: {
-          [Op.or]: [{ username: req.body.username }, { email: req.body.email }],
+          [Op.or]: [{ username: username }, { email: email }],
         },
       });
 
       if (existingUser) {
         return res.status(400).json({
-          error: "User with the same username or email already exists",
+          message: "User with the same username or email already exists",
         });
       }
-      const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+      if (!validator.isEmail(email)) {
+        return res.status(400).json({ message: "Email is not valid" });
+      }
+
+      // if (!validator.isStrongPassword(password)) {
+      //   return res.status(400).json({ message: "Password is not strong" });
+      // }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = await User.create({
-        username: req.body.username,
+        username: username,
         password: hashedPassword,
-        email: req.body.email,
+        email: email,
       });
-      const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, {
-        expiresIn: "24h",
-      });
-      res.status(201).json({ message: "Signup up successfully", token });
+      const token = createToken(newUser.id);
+      res.status(201).json({ email, username, token });
     } catch (error) {
       next(error);
     }
@@ -35,16 +54,15 @@ const authController = {
 
   async login(req, res, next) {
     try {
+      const { email, password } = req.body;
       const user = await User.findOne({
-        where: { email: req.body.email },
+        where: { email: email },
       });
-      if (user && (await bcrypt.compare(req.body.password, user.password))) {
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-          expiresIn: "24h",
-        });
-        res.status(200).json({ message: "Logged in successfully", token });
+      if (user && (await bcrypt.compare(password, user.password))) {
+        const token = createToken(user.id);
+        res.status(200).json({ email, username: user.username, token });
       } else {
-        throw new Error("Invalid credentials");
+        return res.status(400).json({ message: "Invalid email or password" });
       }
     } catch (error) {
       next(error);
@@ -59,14 +77,14 @@ const authController = {
       if (!user) {
         return res
           .status(401)
-          .send("User not registered OR Token malfunctioned");
+          .json({ message: "User not registered OR Token malfunctioned" });
       }
       if (user.id !== req.user.id) {
-        return res.status(401).send("Permissions didn't match");
+        return res.status(401).json({ message: "Permissions didn't match" });
       }
       return res
         .status(200)
-        .json({ message: "OK VERIFIED", email: user.email });
+        .json({ message: "success : User exists", email: user.email });
     } catch (error) {
       console.log(error);
       return res.status(400).json({ message: "ERROR", cause: error.message });

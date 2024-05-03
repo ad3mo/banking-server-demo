@@ -81,7 +81,7 @@ const billPaymentController = {
         attributes: ["number"],
       });
 
-      // Extract the account IDs from the accounts objects
+      // Extract account IDs from the accounts objects
       const accountIds = accounts.map((account) => account.number);
 
       const transactions = await BillPayment.findAll({

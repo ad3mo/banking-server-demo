@@ -21,6 +21,11 @@ BillPayment.init(
       type: DataTypes.ENUM("gas", "electricity", "water"),
       allowNull: false,
     },
+    currency: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: "TND",
+    },
     date: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -35,7 +40,7 @@ BillPayment.init(
   }
 );
 
-// Define fixed amounts for each bill type
+//  fixed amounts for each bill type
 BillPayment.gasAmount = 100;
 BillPayment.electricityAmount = 200;
 BillPayment.waterAmount = 50;

@@ -17,6 +17,11 @@ Transfer.init(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
+    currency: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: "TND",
+    },
     date: {
       type: DataTypes.DATE,
       allowNull: false,
