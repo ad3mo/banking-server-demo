@@ -6,6 +6,20 @@ const transferController = {
   async transferMoney(req, res, next) {
     const senderAccountId = req.user.id;
     const { receiverAccountId, amount } = req.body;
+    // Convert receiverAccountId to a number
+    const receiverAccountIdNumber = Number(receiverAccountId);
+
+    // Convert amount to a number
+    const amountNumber = Number(amount);
+
+    // Check if the conversion was successful (Optional)
+    if (isNaN(receiverAccountIdNumber) || isNaN(amountNumber)) {
+      return res
+        .status(400)
+        .send(
+          "Invalid input: receiverAccountId and amount should be valid numbers."
+        );
+    }
 
     // Validate input
     if (!senderAccountId || !receiverAccountId || !amount || amount <= 0) {
@@ -22,7 +36,7 @@ const transferController = {
       const result = await sequelize.transaction(async (t) => {
         // Get sender and receiver accounts
         const senderAccount = await Account.findOne({
-          where: { number: senderAccountId },
+          where: { userId: senderAccountId },
           transaction: t,
         });
 
@@ -54,7 +68,7 @@ const transferController = {
         // Create transfer record
         await Transfer.create(
           {
-            senderAccountId,
+            senderAccountId: senderAccount.number,
             receiverAccountId,
             amount,
           },

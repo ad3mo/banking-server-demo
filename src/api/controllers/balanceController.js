@@ -3,8 +3,8 @@ const Account = require("../../models/AccountModel");
 const balanceController = {
   async getBalance(req, res, next) {
     try {
-      const accountId = req.user.id;
-      const account = await Account.findOne({ where: { userId: accountId } });
+      const userId = req.user.id;
+      const account = await Account.findOne({ where: { userId: userId } });
       if (account) {
         res.status(200).json({ balance: account.balance });
       } else {

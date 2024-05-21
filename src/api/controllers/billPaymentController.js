@@ -4,11 +4,11 @@ const sequelize = require("../../config/db");
 
 const billPaymentController = {
   async payBill(req, res, next) {
-    const accountId = req.user.id;
+    const userId = req.user.id;
     const { type } = req.body;
 
     // Validate input
-    if (!accountId || !type) {
+    if (!userId || !type) {
       return res.status(400).json({ message: "Invalid input" });
     }
 
@@ -17,7 +17,7 @@ const billPaymentController = {
       await sequelize.transaction(async (t) => {
         // Get account
         const account = await Account.findOne({
-          where: { number: accountId },
+          where: { userId: userId },
           transaction: t,
         });
 
@@ -49,6 +49,7 @@ const billPaymentController = {
 
         // Update balance
         account.balance -= amount;
+        const accountId = account.number;
 
         // Save the changes
         await account.save({ transaction: t });
