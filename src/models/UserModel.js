@@ -1,6 +1,5 @@
 const { Model, DataTypes } = require("sequelize");
-const sequelize = require("../config/db"); // Assuming you have a db.js file in your config folder for the Sequelize connection
-
+const sequelize = require("../config/db");
 class User extends Model {}
 
 User.init(
@@ -14,6 +13,21 @@ User.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
+    },
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
     },
     password: {
       type: DataTypes.STRING,

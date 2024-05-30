@@ -4,16 +4,25 @@ const sequelize = require("../../config/db");
 const { Op } = require("sequelize");
 const transferController = {
   async transferMoney(req, res, next) {
-    const senderAccountId = req.user.id;
-    const { receiverAccountId, amount } = req.body;
+    const userId = req.user.id;
+    const { receiverAccountNumber, amount } = req.body;
+    console.log(userId);
+    console.log(receiverAccountNumber);
+
+    const senderAccount = await Account.findOne({
+      where: { userId: userId },
+    });
+    const senderAccountNumber = senderAccount.accountNumber;
+    console.log(senderAccountNumber);
+
     // Convert receiverAccountId to a number
-    const receiverAccountIdNumber = Number(receiverAccountId);
+    const receiverAccNumber = Number(receiverAccountNumber);
 
     // Convert amount to a number
     const amountNumber = Number(amount);
 
     // Check if the conversion was successful (Optional)
-    if (isNaN(receiverAccountIdNumber) || isNaN(amountNumber)) {
+    if (isNaN(receiverAccNumber) || isNaN(amountNumber)) {
       return res
         .status(400)
         .send(
@@ -22,10 +31,10 @@ const transferController = {
     }
 
     // Validate input
-    if (!senderAccountId || !receiverAccountId || !amount || amount <= 0) {
+    if (!senderAccountNumber || !receiverAccNumber || !amount || amount <= 0) {
       return res.status(400).json({ message: "Invalid input" });
     }
-    if (senderAccountId === receiverAccountId) {
+    if (senderAccountNumber === receiverAccNumber) {
       return res
         .status(400)
         .json({ message: "You can't send money to yourself" });
@@ -35,13 +44,9 @@ const transferController = {
       // Start a transaction
       const result = await sequelize.transaction(async (t) => {
         // Get sender and receiver accounts
-        const senderAccount = await Account.findOne({
-          where: { userId: senderAccountId },
-          transaction: t,
-        });
 
         const receiverAccount = await Account.findOne({
-          where: { number: receiverAccountId },
+          where: { accountNumber: receiverAccNumber },
           transaction: t,
         });
 
@@ -64,12 +69,12 @@ const transferController = {
         // Save the changes
         await senderAccount.save({ transaction: t });
         await receiverAccount.save({ transaction: t });
-
+        console.log(receiverAccount.accountNumber);
         // Create transfer record
         await Transfer.create(
           {
-            senderAccountId: senderAccount.number,
-            receiverAccountId,
+            senderAccountNumber: senderAccount.accountNumber,
+            receiverAccountNumber: receiverAccNumber,
             amount,
           },
           { transaction: t }
@@ -93,17 +98,17 @@ const transferController = {
       // get all user accounts (1 acc for testing purposes)
       const accounts = await Account.findAll({
         where: { userId: userId },
-        attributes: ["number"],
+        attributes: ["accountNumber"],
       });
 
       //extract account IDs from the accounts objects
-      const accountIds = accounts.map((account) => account.number);
+      const accountIds = accounts.map((account) => account.accountNumber);
 
       const transactions = await Transfer.findAll({
         where: {
           [Op.or]: [
-            { senderAccountId: accountIds },
-            { receiverAccountId: accountIds },
+            { senderAccountNumber: accountIds },
+            { receiverAccountNumber: accountIds },
           ],
         },
         order: [["date", "DESC"]],

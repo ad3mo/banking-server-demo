@@ -7,14 +7,15 @@ const validator = require("validator");
 const createToken = (id) => {
   secret = process.env.JWT_SECRET;
   return jwt.sign({ id }, secret, {
-    expiresIn: "24h",
+    expiresIn: "1h",
   });
 };
 
 const authController = {
   async register(req, res, next) {
     try {
-      const { username, email, password } = req.body;
+      const { username, email, password, firstName, lastName, phone } =
+        req.body;
       if (!username || !email || !password) {
         return res.status(400).json({ message: "All fields are required" });
       }
@@ -44,6 +45,9 @@ const authController = {
         username: username,
         password: hashedPassword,
         email: email,
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
       });
       const token = createToken(newUser.id);
       res.status(201).json({ email, username, token });

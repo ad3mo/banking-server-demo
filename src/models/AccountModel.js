@@ -5,10 +5,10 @@ class Account extends Model {}
 
 Account.init(
   {
-    number: {
+    accountNumber: {
       type: DataTypes.INTEGER,
+      primaryKey: true,
       unique: true,
-      allowNull: true,
     },
     userId: {
       type: DataTypes.INTEGER,
@@ -37,20 +37,20 @@ Account.init(
     hooks: {
       beforeCreate: async (account) => {
         // Generate a unique account number
-        account.number = await generateUniqueAccountNumber();
+        account.accountNumber = await generateUniqueAccountNumber();
       },
     },
   }
 );
 
 async function generateUniqueAccountNumber() {
-  let accountNumber = Math.floor(10000 + Math.random() * 90000); // genrate 5 digit acc numeber
+  let accountNumber = Math.floor(1000000 + Math.random() * 9000000); // genrate 5 digit acc numeber
   const existingAccount = await Account.findOne({
-    where: { number: accountNumber },
+    where: { accountNumber: accountNumber },
   });
-  // Ensure generated number is unique
+  //ensure account is unique
   while (existingAccount) {
-    accountNumber = Math.floor(10000 + Math.random() * 90000);
+    accountNumber = Math.floor(1000000 + Math.random() * 9000000);
     existingAccount = await Account.findOne({
       where: { number: accountNumber },
     });

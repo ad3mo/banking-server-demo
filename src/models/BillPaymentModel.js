@@ -5,12 +5,17 @@ class BillPayment extends Model {}
 
 BillPayment.init(
   {
-    accountId: {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    accountNumber: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: "accounts",
-        key: "number",
+        key: "account_number",
       },
     },
     amount: {
@@ -40,9 +45,15 @@ BillPayment.init(
   }
 );
 
-//  fixed amounts for each bill type
-BillPayment.gasAmount = 100;
-BillPayment.electricityAmount = 200;
-BillPayment.waterAmount = 50;
+function getRandomPrice(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+BillPayment.gasAmount = getRandomPrice(15, 250);
+BillPayment.electricityAmount = getRandomPrice(50, 250);
+BillPayment.waterAmount = getRandomPrice(30, 100);
 
 module.exports = BillPayment;

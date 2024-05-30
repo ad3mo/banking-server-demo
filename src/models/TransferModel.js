@@ -5,13 +5,15 @@ class Transfer extends Model {}
 
 Transfer.init(
   {
-    senderAccountId: {
+    senderAccountNumber: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: "sender_account_number",
     },
-    receiverAccountId: {
+    receiverAccountNumber: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: "receiver_account_number",
     },
     amount: {
       type: DataTypes.DECIMAL(10, 2),

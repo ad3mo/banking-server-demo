@@ -49,15 +49,15 @@ const billPaymentController = {
 
         // Update balance
         account.balance -= amount;
-        const accountId = account.number;
-
+        const accountNumber = account.accountNumber;
+        console.log(accountNumber);
         // Save the changes
         await account.save({ transaction: t });
 
         // Create bill payment record
         await BillPayment.create(
           {
-            accountId,
+            accountNumber,
             amount,
             type,
           },
@@ -70,6 +70,7 @@ const billPaymentController = {
         });
       });
     } catch (error) {
+      console.log("emme", error.message);
       next(error);
     }
   },
@@ -79,14 +80,14 @@ const billPaymentController = {
       // get all user accounts (1 acc for testing purposes)
       const accounts = await Account.findAll({
         where: { userId: userId },
-        attributes: ["number"],
+        attributes: ["accountNumber"],
       });
 
       // Extract account IDs from the accounts objects
-      const accountIds = accounts.map((account) => account.number);
+      const accountNumbers = accounts.map((account) => account.accountNumber);
 
       const transactions = await BillPayment.findAll({
-        where: { accountId: accountIds },
+        where: { accountNumber: accountNumbers },
         order: [["date", "DESC"]],
       });
 
