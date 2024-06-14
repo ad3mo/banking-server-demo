@@ -1,19 +1,18 @@
 const Transfer = require("../../models/TransferModel");
 const Account = require("../../models/AccountModel");
+const User = require("../../models/UserModel");
 const sequelize = require("../../config/db");
 const { Op } = require("sequelize");
 const transferController = {
   async transferMoney(req, res, next) {
     const userId = req.user.id;
     const { receiverAccountNumber, amount } = req.body;
-    console.log(userId);
-    console.log(receiverAccountNumber);
+    let description = req.body.description;
 
     const senderAccount = await Account.findOne({
       where: { userId: userId },
     });
     const senderAccountNumber = senderAccount.accountNumber;
-    console.log(senderAccountNumber);
 
     // Convert receiverAccountId to a number
     const receiverAccNumber = Number(receiverAccountNumber);
@@ -57,6 +56,24 @@ const transferController = {
             .json({ message: "Sender or receiver account does not exist" });
         }
 
+        if (!description) {
+          try {
+            const receiverId = receiverAccount.userId;
+
+            const receiverUser = await User.findOne({
+              where: { id: receiverId },
+            });
+
+            description =
+              "Transfer for " +
+              receiverUser.firstName +
+              " " +
+              receiverUser.lastName;
+          } catch (e) {
+            return res.status(400).json({ message: "Error" });
+          }
+        }
+
         // Check if sender has enough balance
         if (senderAccount.balance < amount) {
           return res.status(400).json({ message: "Insufficient balance" });
@@ -71,11 +88,13 @@ const transferController = {
         await receiverAccount.save({ transaction: t });
         console.log(receiverAccount.accountNumber);
         // Create transfer record
+        console.log(description);
         await Transfer.create(
           {
             senderAccountNumber: senderAccount.accountNumber,
             receiverAccountNumber: receiverAccNumber,
             amount,
+            description,
           },
           { transaction: t }
         );
@@ -106,10 +125,7 @@ const transferController = {
 
       const transactions = await Transfer.findAll({
         where: {
-          [Op.or]: [
-            { senderAccountNumber: accountIds },
-            { receiverAccountNumber: accountIds },
-          ],
+          [Op.or]: [{ senderAccountNumber: accountIds }],
         },
         order: [["date", "DESC"]],
       });

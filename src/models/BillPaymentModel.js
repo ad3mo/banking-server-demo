@@ -23,13 +23,18 @@ BillPayment.init(
       allowNull: false,
     },
     type: {
-      type: DataTypes.ENUM("gas", "electricity", "water"),
+      type: DataTypes.ENUM("gas", "electricity", "water", "Other"),
       allowNull: false,
+      defaultValue: "Other",
     },
     currency: {
       type: DataTypes.STRING,
       allowNull: false,
       defaultValue: "TND",
+    },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     date: {
       type: DataTypes.DATE,
@@ -55,5 +60,6 @@ function getRandomPrice(min, max) {
 BillPayment.gasAmount = getRandomPrice(15, 250);
 BillPayment.electricityAmount = getRandomPrice(50, 250);
 BillPayment.waterAmount = getRandomPrice(30, 100);
+BillPayment.otherAmount = getRandomPrice(30, 300);
 
 module.exports = BillPayment;

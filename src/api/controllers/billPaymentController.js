@@ -5,7 +5,7 @@ const sequelize = require("../../config/db");
 const billPaymentController = {
   async payBill(req, res, next) {
     const userId = req.user.id;
-    const { type } = req.body;
+    const { type, description } = req.body;
 
     // Validate input
     if (!userId || !type) {
@@ -38,6 +38,9 @@ const billPaymentController = {
           case "water":
             amount = BillPayment.waterAmount;
             break;
+          case "Other":
+            amount = BillPayment.otherAmount;
+            break;
           default:
             return res.status(400).json({ message: "Invalid bill type" });
         }
@@ -60,6 +63,7 @@ const billPaymentController = {
             accountNumber,
             amount,
             type,
+            description,
           },
           { transaction: t }
         );

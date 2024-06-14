@@ -6,7 +6,9 @@ const balanceController = {
       const userId = req.user.id;
       const account = await Account.findOne({ where: { userId: userId } });
       if (account) {
-        res.status(200).json({ balance: account.balance });
+        res
+          .status(200)
+          .json({ balance: account.balance, currency: account.currency });
       } else {
         throw new Error("Account not found");
       }

@@ -24,6 +24,10 @@ Transfer.init(
       allowNull: false,
       defaultValue: "TND",
     },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     date: {
       type: DataTypes.DATE,
       allowNull: false,
